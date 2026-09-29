@@ -1,10 +1,88 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#000"><title>最小</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;touch-action:none}canvas{position:fixed;inset:0;display:block;width:100vw;height:100dvh;image-rendering:pixelated}</style></head><body><canvas id="g"></canvas><script>
-const c=document.getElementById('g'),x=c.getContext('2d',{alpha:false});let W=1,H=1,dpr=1,cell=2,cols=1,rows=1,top=0,pY=0,pX=0,pW=42,lvl=1,grid=new Uint8Array(1),balls=[],alive=0,broken=0,next=18,run=false,over=false,last=0,resizeTimer=0;
-function size(){const nw=Math.max(1,document.documentElement.clientWidth||innerWidth),nh=Math.max(1,innerHeight);if(nw===W&&nh===H&&c.width)return;W=nw;H=nh;dpr=Math.min(devicePixelRatio||1,2);c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);c.style.width=W+'px';c.style.height=H+'px';x.setTransform(dpr,0,0,dpr,0,0);pW=Math.max(42,W*.115);pX=W/2;pY=H*.91;reset()}
-function reset(){cell=Math.max(2,W/360);cols=Math.max(1,Math.floor(W/cell));top=H*.105;rows=Math.max(1,Math.floor(Math.min(H*(.25+lvl*.018),H*.54)/cell));grid=new Uint8Array(cols*rows);let den=Math.min(.98,.62+lvl*.035);alive=0;for(let i=0;i<grid.length;i++)if(Math.random()<den){grid[i]=1;alive++}broken=0;next=Math.max(7,22-lvl);let s=Math.min(W*.75,W*(.40+lvl*.025));balls=[{x:W/2,y:pY-18,vx:s*.55,vy:-s}];over=false;last=0}
-function hit(b,r){if(b.y+r<top||b.y-r>top+rows*cell)return;let c0=Math.max(0,Math.min(cols-1,Math.floor((b.x-r)/cell))),c1=Math.max(0,Math.min(cols-1,Math.floor((b.x+r)/cell))),r0=Math.max(0,Math.min(rows-1,Math.floor((b.y-r-top)/cell))),r1=Math.max(0,Math.min(rows-1,Math.floor((b.y+r-top)/cell)));for(let rr=r0;rr<=r1;rr++)for(let cc=c0;cc<=c1;cc++){let i=rr*cols+cc;if(!grid[i])continue;grid[i]=0;alive--;broken++;let cx=(cc+.5)*cell,cy=top+(rr+.5)*cell;if(Math.abs(b.x-cx)>Math.abs(b.y-cy))b.vx=-b.vx;else b.vy=-b.vy;if(broken>=next){broken=0;next=Math.max(3,Math.floor(next*.96));if(balls.length<650){let s=Math.hypot(b.vx,b.vy),j=(Math.random()-.5)*.42,nx=Math.max(-s*.9,Math.min(s*.9,b.vx+s*j)),ny=Math.sqrt(Math.max(1,s*s-nx*nx))*(Math.random()<.5?-1:1);balls.push({x:b.x,y:b.y,vx:nx,vy:ny})}}return}}
-function step(dt){let r=Math.max(1.25,cell*.52),cap=W*1.15;for(let k=balls.length-1;k>=0;k--){let b=balls[k];b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x<r){b.x=r;b.vx=Math.abs(b.vx)}if(b.x>W-r){b.x=W-r;b.vx=-Math.abs(b.vx)}if(b.y<r){b.y=r;b.vy=Math.abs(b.vy)}if(b.vy>0&&b.y+r>=pY&&b.y-r<=pY+12&&Math.abs(b.x-pX)<=pW/2+r){b.y=pY-r;let h=Math.max(-1,Math.min(1,(b.x-pX)/(pW/2))),s=Math.min(cap,Math.hypot(b.vx,b.vy)*1.015);b.vx=s*h*.82;b.vy=-Math.sqrt(Math.max(1,s*s-b.vx*b.vx))}hit(b,r);if(b.y>H+20)balls.splice(k,1)}if(!balls.length)over=true;if(alive<=0){lvl++;reset();run=true}}
-function draw(t){let dt=last?Math.min(.025,(t-last)/1000):0;last=t;if(run&&!over){let rem=dt;while(rem>0){let s=Math.min(.006,rem);step(s);rem-=s}}x.fillStyle='#000';x.fillRect(0,0,W,H);x.fillStyle='#e1e1e1';for(let r=0;r<rows;r++)for(let q=0;q<cols;q++)if(grid[r*cols+q])x.fillRect(q*cell,top+r*cell,Math.max(1,cell-1),Math.max(1,cell-1));x.fillStyle='#fff';let br=Math.max(1.25,cell*.52);for(let b of balls)x.fillRect(b.x-br,b.y-br,br*2,br*2);x.fillRect(pX-pW/2,pY,pW,Math.max(2,cell));x.font=`${Math.max(14,W*.031)}px monospace`;x.textBaseline='top';x.fillText(lvl,W*.045,H*.035);x.textAlign='right';x.fillText(balls.length,W*.955,H*.035);x.textAlign='center';if(!run||over){x.font=`${Math.max(12,W*.025)}px monospace`;x.fillText('tap',W/2,H*.78)}x.textAlign='left';requestAnimationFrame(draw)}
-function touch(e){e.preventDefault();let p=e;if(over){reset();run=true}else run=true;pX=Math.max(pW/2,Math.min(W-pW/2,p.clientX))}addEventListener('pointerdown',touch,{passive:false});addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')touch(e)},{passive:false});addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(size,120)},{passive:true});size();requestAnimationFrame(draw);
-</script></body></html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>最小</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;touch-action:none;font-family:monospace}#game{position:fixed;left:0;top:0;width:100%;height:100%;display:block}#boot{position:fixed;z-index:2;left:50%;top:76%;transform:translate(-50%,-50%);font:14px monospace;color:#fff;pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas><div id="boot">tap</div>
+<script>
+(function(){
+'use strict';
+var canvas=document.getElementById('game');
+var boot=document.getElementById('boot');
+var ctx=canvas.getContext('2d');
+var W=0,H=0,scale=1,pixel=2,cols=0,rows=0,fieldTop=0,paddleY=0,paddleX=0,paddleW=48;
+var level=1,grid=null,alive=0,broken=0,nextBall=18,playing=false,gameOver=false,lastTime=0,balls=[];
+function resizeGame(){
+  W=Math.max(240,window.innerWidth||document.documentElement.clientWidth||360);
+  H=Math.max(320,window.innerHeight||document.documentElement.clientHeight||640);
+  scale=Math.min(window.devicePixelRatio||1,2);
+  canvas.width=Math.floor(W*scale); canvas.height=Math.floor(H*scale);
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  ctx.setTransform(scale,0,0,scale,0,0);
+  paddleW=Math.max(48,W*0.12); paddleX=W/2; paddleY=H*0.91;
+  makeLevel();
+}
+function makeLevel(){
+  pixel=Math.max(2,Math.floor(W/360)); cols=Math.ceil(W/pixel); fieldTop=H*0.10;
+  rows=Math.max(24,Math.floor(Math.min(H*(0.25+level*0.018),H*0.52)/pixel));
+  grid=new Uint8Array(cols*rows); alive=0;
+  var density=Math.min(0.96,0.68+level*0.025);
+  for(var i=0;i<grid.length;i++){if(Math.random()<density){grid[i]=1;alive++;}}
+  broken=0; nextBall=Math.max(5,20-level);
+  var speed=W*(0.42+Math.min(level,12)*0.018);
+  balls=[{x:W/2,y:paddleY-20,vx:speed*0.45,vy:-speed}]; gameOver=false; lastTime=0;
+}
+function collide(b,r){
+  if(b.y+r<fieldTop||b.y-r>fieldTop+rows*pixel)return;
+  var cc=Math.floor(b.x/pixel), rr=Math.floor((b.y-fieldTop)/pixel);
+  if(cc<0||cc>=cols||rr<0||rr>=rows)return;
+  var index=rr*cols+cc; if(!grid[index])return;
+  grid[index]=0; alive--; broken++; b.vy=-b.vy;
+  if(broken>=nextBall&&balls.length<500){
+    broken=0; nextBall=Math.max(3,Math.floor(nextBall*0.96));
+    var s=Math.sqrt(b.vx*b.vx+b.vy*b.vy),a=(Math.random()-0.5)*0.8;
+    balls.push({x:b.x,y:b.y,vx:b.vx*Math.cos(a)-b.vy*Math.sin(a),vy:b.vx*Math.sin(a)+b.vy*Math.cos(a)});
+  }
+}
+function update(dt){
+  var r=Math.max(1.5,pixel*0.6);
+  for(var i=balls.length-1;i>=0;i--){
+    var b=balls[i]; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    if(b.x<r){b.x=r;b.vx=Math.abs(b.vx);} if(b.x>W-r){b.x=W-r;b.vx=-Math.abs(b.vx);} if(b.y<r){b.y=r;b.vy=Math.abs(b.vy);}
+    if(b.vy>0&&b.y+r>=paddleY&&b.y-r<=paddleY+10&&Math.abs(b.x-paddleX)<=paddleW/2+r){
+      b.y=paddleY-r; var hit=(b.x-paddleX)/(paddleW/2); var s=Math.sqrt(b.vx*b.vx+b.vy*b.vy); b.vx=s*hit*0.8; b.vy=-Math.sqrt(Math.max(1,s*s-b.vx*b.vx));
+    }
+    collide(b,r); if(b.y>H+30)balls.splice(i,1);
+  }
+  if(!balls.length){gameOver=true;boot.textContent='tap';boot.style.display='block';}
+  if(alive<=0){level++;makeLevel();playing=true;}
+}
+function render(now){
+  var dt=lastTime?Math.min(0.025,(now-lastTime)/1000):0; lastTime=now;
+  if(playing&&!gameOver){var remain=dt;while(remain>0){var d=Math.min(0.006,remain);update(d);remain-=d;}}
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#ddd';
+  for(var rr=0;rr<rows;rr++){for(var cc=0;cc<cols;cc++){if(grid[rr*cols+cc])ctx.fillRect(cc*pixel,fieldTop+rr*pixel,Math.max(1,pixel-1),Math.max(1,pixel-1));}}
+  ctx.fillStyle='#fff'; var rad=Math.max(1.5,pixel*0.6);
+  for(var i=0;i<balls.length;i++){var b=balls[i];ctx.fillRect(b.x-rad,b.y-rad,rad*2,rad*2);}
+  ctx.fillRect(paddleX-paddleW/2,paddleY,paddleW,Math.max(2,pixel));
+  ctx.font='14px monospace';ctx.textBaseline='top';ctx.fillText(String(level),16,18);ctx.textAlign='right';ctx.fillText(String(balls.length),W-16,18);ctx.textAlign='left';
+  requestAnimationFrame(render);
+}
+function point(e){
+  if(e.cancelable)e.preventDefault(); playing=true; gameOver=false; boot.style.display='none';
+  var px=(typeof e.clientX==='number')?e.clientX:W/2; paddleX=Math.max(paddleW/2,Math.min(W-paddleW/2,px));
+}
+canvas.addEventListener('pointerdown',point,{passive:false});canvas.addEventListener('pointermove',function(e){if(e.pointerType==='touch'||e.buttons)point(e);},{passive:false});
+window.addEventListener('resize',function(){resizeGame();});
+resizeGame(); requestAnimationFrame(render);
+})();
+</script>
+</body></html>
